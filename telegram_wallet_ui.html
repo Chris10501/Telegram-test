@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>NovaPay Wallet</title>
+  <style>
+    :root {
+      --bg: #07101f;
+      --bg-2: #0d1730;
+      --surface: rgba(255, 255, 255, 0.075);
+      --surface-strong: rgba(255, 255, 255, 0.12);
+      --stroke: rgba(255, 255, 255, 0.11);
+      --text: #f7f9ff;
+      --muted: #91a0ba;
+      --primary: #6c63ff;
+      --primary-2: #8d6bff;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #fb7185;
+      --cyan: #22d3ee;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(108, 99, 255, 0.28), transparent 32rem),
+        radial-gradient(circle at 100% 20%, rgba(34, 211, 238, 0.14), transparent 28rem),
+        linear-gradient(180deg, var(--bg-2), var(--bg));
+      overflow-x: hidden;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+    }
+
+    .app-shell {
+      width: min(100%, 520px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding:
+        max(20px, env(safe-area-inset-top))
+        18px
+        max(110px, calc(24px + env(safe-area-inset-bottom)));
+      position: relative;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(55px);
+      pointer-events: none;
+      opacity: .22;
+    }
+
+    .orb.one {
+      width: 180px;
+      height: 180px;
+      background: #6c63ff;
+      top: 80px;
+      left: -80px;
+    }
+
+    .orb.two {
+      width: 210px;
+      height: 210px;
+      background: #22d3ee;
+      right: -100px;
+      bottom: 120px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-weight: 800;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.04)),
+        linear-gradient(135deg, #7c3aed, #2563eb);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 12px 28px rgba(37, 99, 235, .24);
+    }
+
+    .profile-copy {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 2px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .profile h1 {
+      margin: 0;
+      font-size: 18px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .icon-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform .2s ease, background .2s ease;
+      backdrop-filter: blur(18px);
+    }
+
+    .icon-button:active {
+      transform: scale(.95);
+    }
+
+    .balance-card {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.05)),
+        linear-gradient(135deg, rgba(108, 99, 255, .88), rgba(37, 99, 235, .82));
+      border: 1px solid rgba(255,255,255,.17);
+      box-shadow: var(--shadow);
+      margin-bottom: 25px;
+    }
+
+    .balance-card::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      right: -65px;
+      top: -70px;
+      border: 35px solid rgba(255,255,255,.08);
+    }
+
+    .balance-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: rgba(255,255,255,.75);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .balance-value {
+      margin: 12px 0 20px;
+      font-size: clamp(34px, 9vw, 47px);
+      line-height: 1;
+      font-weight: 850;
+      letter-spacing: -.04em;
+    }
+
+    .balance-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .balance-meta span {
+      color: rgba(255,255,255,.72);
+    }
+
+    .status-pill {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.13);
+      color: white !important;
+      backdrop-filter: blur(10px);
+      font-weight: 700;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -.02em;
+    }
+
+    .section-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .menu-card {
+      min-height: 146px;
+      position: relative;
+      overflow: hidden;
+      padding: 17px;
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      backdrop-filter: blur(20px);
+      transition:
+        transform .24s ease,
+        border-color .24s ease,
+        background .24s ease;
+      animation: rise .55s both;
+    }
+
+    .menu-card:nth-child(2) { animation-delay: .06s; }
+    .menu-card:nth-child(3) { animation-delay: .12s; }
+    .menu-card:nth-child(4) { animation-delay: .18s; }
+    .menu-card:nth-child(5) { animation-delay: .24s; }
+
+    .menu-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,.24);
+      background: var(--surface-strong);
+    }
+
+    .menu-card:active {
+      transform: scale(.98);
+    }
+
+    .menu-card.featured {
+      grid-column: 1 / -1;
+      min-height: 126px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 15px;
+      background:
+        linear-gradient(135deg, rgba(52, 211, 153, .17), rgba(34, 211, 238, .09)),
+        var(--surface);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      font-size: 23px;
+      background: rgba(255,255,255,.1);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .menu-card.featured .card-icon {
+      margin: 0;
+      width: 56px;
+      height: 56px;
+      border-radius: 19px;
+    }
+
+    .menu-card h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .menu-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .arrow {
+      position: absolute;
+      top: 17px;
+      right: 17px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .featured .arrow {
+      position: static;
+      width: 37px;
+      height: 37px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.08);
+    }
+
+    .accent-deposit .card-icon { color: var(--success); }
+    .accent-withdraw .card-icon { color: var(--danger); }
+    .accent-account .card-icon { color: var(--warning); }
+    .accent-pay .card-icon { color: var(--primary-2); }
+    .accent-receive .card-icon { color: var(--cyan); }
+
+    .activity {
+      margin-top: 24px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--stroke);
+      background: var(--surface);
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .activity-head {
+      padding: 17px 18px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .activity-head h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .text-button {
+      background: none;
+      color: #a8a3ff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .transaction {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 18px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+
+    .tx-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.075);
+    }
+
+    .tx-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tx-main strong,
+    .tx-main span {
+      display: block;
+    }
+
+    .tx-main strong {
+      font-size: 13px;
+      margin-bottom: 3px;
+    }
+
+    .tx-main span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .tx-amount {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .positive { color: var(--success); }
+    .negative { color: #ff9bab; }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: min(calc(100% - 24px), 496px);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 9px;
+      border-radius: 24px;
+      background: rgba(9, 17, 35, .83);
+      border: 1px solid var(--stroke);
+      box-shadow: 0 18px 50px rgba(0,0,0,.4);
+      backdrop-filter: blur(28px);
+      z-index: 20;
+    }
+
+    .nav-item {
+      min-height: 52px;
+      border-radius: 17px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      gap: 2px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .nav-item span:first-child {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .nav-item.active {
+      color: white;
+      background: linear-gradient(135deg, rgba(108,99,255,.85), rgba(37,99,235,.75));
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(0, 0, 0, .56);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .24s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet {
+      width: min(100%, 520px);
+      max-height: 88vh;
+      overflow: auto;
+      padding: 12px 20px max(24px, env(safe-area-inset-bottom));
+      border-radius: 28px 28px 0 0;
+      background: #101a31;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 -30px 80px rgba(0,0,0,.45);
+      transform: translateY(105%);
+      transition: transform .3s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .modal-backdrop.open .sheet {
+      transform: translateY(0);
+    }
+
+    .handle {
+      width: 46px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.17);
+      margin: 0 auto 18px;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .sheet-header h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .sheet-header p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .close-button {
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      background: rgba(255,255,255,.08);
+      color: white;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 750;
+      color: #c4cce0;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 52px;
+      padding: 0 14px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 16px;
+      background: rgba(255,255,255,.055);
+    }
+
+    .input-wrap:focus-within {
+      border-color: rgba(141, 107, 255, .72);
+      box-shadow: 0 0 0 4px rgba(108, 99, 255, .11);
+    }
+
+    .input-wrap input,
+    .input-wrap select {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      color: white;
+      background: transparent;
+    }
+
+    .input-wrap select option {
+      background: #101a31;
+    }
+
+    .currency {
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .quick-amounts {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 10px 0 18px;
+    }
+
+    .quick-amounts button {
+      min-height: 38px;
+      border-radius: 12px;
+      color: #d9dff0;
+      background: rgba(255,255,255,.065);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .submit-button {
+      width: 100%;
+      min-height: 54px;
+      border-radius: 17px;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      font-weight: 850;
+      cursor: pointer;
+      box-shadow: 0 14px 28px rgba(68, 80, 230, .28);
+    }
+
+    .qr-box {
+      width: 190px;
+      height: 190px;
+      margin: 0 auto 18px;
+      padding: 14px;
+      border-radius: 24px;
+      background: white;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-template-rows: repeat(9, 1fr);
+      gap: 2px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+    }
+
+    .qr-box span {
+      background: #111827;
+      border-radius: 1px;
+    }
+
+    .qr-box span.off {
+      background: transparent;
+    }
+
+    .receive-code {
+      text-align: center;
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+      word-break: break-all;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      top: max(20px, env(safe-area-inset-top));
+      transform: translate(-50%, -20px);
+      z-index: 200;
+      width: min(calc(100% - 36px), 420px);
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(18, 29, 53, .95);
+      border: 1px solid rgba(255,255,255,.13);
+      color: white;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s ease;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 360px) {
+      .app-shell { padding-left: 13px; padding-right: 13px; }
+      .menu-grid { gap: 10px; }
+      .menu-card { min-height: 138px; padding: 14px; }
+      .balance-card { padding: 21px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="profile">
+        <div class="avatar">JD</div>
+        <div class="profile-copy">
+          <p class="eyebrow">Welcome back</p>
+          <h1>Jordan Davis</h1>
+        </div>
+      </div>
+      <button class="icon-button" aria-label="Notifications">🔔</button>
+    </header>
+
+    <section class="balance-card" aria-label="Wallet balance">
+      <div class="balance-label">
+        <span>Available balance</span>
+        <span>•••• 4821</span>
+      </div>
+      <div class="balance-value">£12,480.50</div>
+      <div class="balance-meta">
+        <span>NovaPay Main Wallet</span>
+        <span class="status-pill">Verified ✓</span>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <div>
+        <h2>Money tools</h2>
+        <p>Choose an action to continue</p>
+      </div>
+    </div>
+
+    <section class="menu-grid">
+      <button class="menu-card accent-deposit" data-action="deposit">
+        <span class="arrow">↗</span>
+        <div class="card-icon">↓</div>
+        <h3>Deposit</h3>
+        <p>Add funds securely from a card or bank account.</p>
+      </button>
+
+      <button class="menu-card accent-withdraw" data-action="withdraw">
+        <span class="arrow">↗</span>
+        <div class="card-icon">↑</div>
+        <h3>Withdraw</h3>
+        <p>Transfer money from your wallet to your bank.</p>
+      </button>
+
+      <button class="menu-card accent-account" data-action="account">
+        <span class="arrow">↗</span>
+        <div class="card-icon">＋</div>
+        <h3>Create account</h3>
+        <p>Open a personal or business money account.</p>
+      </button>
+
+      <button class="menu-card accent-pay" data-action="pay">
+        <span class="arrow">↗</span>
+        <div class="card-icon">➜</div>
+        <h3>Pay</h3>
+        <p>Send money instantly using a username or account.</p>
+      </button>
+
+      <button class="menu-card featured accent-receive" data-action="receive">
+        <div class="card-icon">▦</div>
+        <div>
+          <h3>Receive money</h3>
+          <p>Share your QR code or payment link to get paid.</p>
+        </div>
+        <span class="arrow">›</span>
+      </button>
+    </section>
+
+    <section class="activity">
+      <div class="activity-head">
+        <h3>Recent activity</h3>
+        <button class="text-button">View all</button>
+      </div>
+      <div class="transaction">
+        <div class="tx-icon">🛍️</div>
+        <div class="tx-main">
+          <strong>Urban Market</strong>
+          <span>Today, 11:42</span>
+        </div>
+        <div class="tx-amount negative">−£48.20</div>
+      </div>
+      <div class="transaction">
+        <div class="tx-icon">💼</div>
+        <div class="tx-main">
+          <strong>Salary payment</strong>
+          <span>24 July, 09:10</span>
+        </div>
+        <div class="tx-amount positive">+£2,950.00</div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Primary navigation">
+    <button class="nav-item active"><span>⌂</span><span>Home</span></button>
+    <button class="nav-item"><span>◴</span><span>Activity</span></button>
+    <button class="nav-item"><span>⚙</span><span>Settings</span></button>
+  </nav>
+
+  <div class="modal-backdrop" id="modal">
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="handle"></div>
+      <header class="sheet-header">
+        <div>
+          <h2 id="sheetTitle">Action</h2>
+          <p id="sheetSubtitle">Complete the details below.</p>
+        </div>
+        <button class="close-button" id="closeModal" aria-label="Close">✕</button>
+      </header>
+      <div id="sheetContent"></div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast">Done</div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    const modal = document.getElementById("modal");
+    const closeModal = document.getElementById("closeModal");
+    const title = document.getElementById("sheetTitle");
+    const subtitle = document.getElementById("sheetSubtitle");
+    const content = document.getElementById("sheetContent");
+    const toast = document.getElementById("toast");
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+
+      const root = document.documentElement;
+      const theme = tg.themeParams || {};
+      if (theme.bg_color) root.style.setProperty("--bg", theme.bg_color);
+      if (theme.secondary_bg_color) root.style.setProperty("--bg-2", theme.secondary_bg_color);
+      if (theme.text_color) root.style.setProperty("--text", theme.text_color);
+      if (theme.hint_color) root.style.setProperty("--muted", theme.hint_color);
+      if (theme.button_color) root.style.setProperty("--primary", theme.button_color);
+    }
+
+    const moneyForm = (buttonText, recipient = false) => `
+      ${recipient ? `
+        <div class="form-group">
+          <label>Recipient</label>
+          <div class="input-wrap">
+            <span>@</span>
+            <input id="recipient" type="text" placeholder="Username or account number" autocomplete="off">
+          </div>
+        </div>` : ""}
+      <div class="form-group">
+        <label>Amount</label>
+        <div class="input-wrap">
+          <span class="currency">£</span>
+          <input id="amount" type="number" min="1" step="0.01" placeholder="0.00" inputmode="decimal">
+          <span class="currency">GBP</span>
+        </div>
+      </div>
+      <div class="quick-amounts">
+        <button type="button" data-amount="25">£25</button>
+        <button type="button" data-amount="50">£50</button>
+        <button type="button" data-amount="100">£100</button>
+        <button type="button" data-amount="250">£250</button>
+      </div>
+      <div class="form-group">
+        <label>Payment method</label>
+        <div class="input-wrap">
+          <select>
+            <option>Main wallet •••• 4821</option>
+            <option>Visa card •••• 9012</option>
+            <option>Bank account •••• 3384</option>
+          </select>
+        </div>
+      </div>
+      <button class="submit-button" data-submit>${buttonText}</button>
+    `;
+
+    const templates = {
+      deposit: {
+        title: "Deposit money",
+        subtitle: "Add money to your NovaPay wallet.",
+        html: moneyForm("Continue deposit")
+      },
+      withdraw: {
+        title: "Withdraw funds",
+        subtitle: "Transfer your balance to a linked account.",
+        html: moneyForm("Review withdrawal")
+      },
+      pay: {
+        title: "Pay someone",
+        subtitle: "Send money instantly and securely.",
+        html: moneyForm("Review payment", true)
+      },
+      account: {
+        title: "Create account",
+        subtitle: "Choose the type of account you need.",
+        html: `
+          <div class="form-group">
+            <label>Account type</label>
+            <div class="input-wrap">
+              <select>
+                <option>Personal account</option>
+                <option>Business account</option>
+                <option>Savings account</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Display name</label>
+            <div class="input-wrap">
+              <input type="text" placeholder="e.g. Travel Savings">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Default currency</label>
+            <div class="input-wrap">
+              <select>
+                <option>GBP — British Pound</option>
+                <option>USD — US Dollar</option>
+                <option>EUR — Euro</option>
+              </select>
+            </div>
+          </div>
+          <button class="submit-button" data-submit>Create account</button>
+        `
+      },
+      receive: {
+        title: "Receive money",
+        subtitle: "Let someone scan or copy your payment link.",
+        html: `
+          <div class="qr-box" aria-label="Demo QR code">
+            ${Array.from({length: 81}, (_, i) => {
+              const pattern = [0,1,2,3,4,9,13,18,20,22,27,31,36,37,38,39,40,44,45,47,49,53,54,58,62,63,64,65,66,67,68,72,76,78,80];
+              return `<span class="${pattern.includes(i) ? "" : "off"}"></span>`;
+            }).join("")}
+          </div>
+          <p class="receive-code">novapay.me/jordan-davis</p>
+          <button class="submit-button" id="copyLink">Copy payment link</button>
+        `
+      }
+    };
+
+    function openSheet(action) {
+      const data = templates[action];
+      title.textContent = data.title;
+      subtitle.textContent = data.subtitle;
+      content.innerHTML = data.html;
+      modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+      tg?.HapticFeedback?.impactOccurred("light");
+
+      content.querySelectorAll("[data-amount]").forEach(button => {
+        button.addEventListener("click", () => {
+          const input = content.querySelector("#amount");
+          if (input) input.value = button.dataset.amount;
+          tg?.HapticFeedback?.selectionChanged();
+        });
+      });
+
+      const submit = content.querySelector("[data-submit]");
+      if (submit) {
+        submit.addEventListener("click", () => {
+          showToast("Action ready for backend integration");
+          closeSheet();
+        });
+      }
+
+      const copy = document.getElementById("copyLink");
+      if (copy) {
+        copy.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText("https://novapay.me/jordan-davis");
+            showToast("Payment link copied");
+          } catch {
+            showToast("Payment link: novapay.me/jordan-davis");
+          }
+        });
+      }
+    }
+
+    function closeSheet() {
+      modal.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      tg?.HapticFeedback?.notificationOccurred("success");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    document.querySelectorAll("[data-action]").forEach(card => {
+      card.addEventListener("click", () => openSheet(card.dataset.action));
+    });
+
+    closeModal.addEventListener("click", closeSheet);
+    modal.addEventListener("click", event => {
+      if (event.target === modal) closeSheet();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeSheet();
+    });
+  </script>
+</body>
+</html>
