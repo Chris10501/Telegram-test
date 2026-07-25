@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deposit</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--tg-theme-bg-color, #fff);
+      color: var(--tg-theme-text-color, #000);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    h2 { margin-bottom: 8px; font-size: 22px; }
+    p  { margin-bottom: 24px; color: var(--tg-theme-hint-color, #888); font-size: 14px; }
+    input[type="number"] {
+      width: 100%;
+      max-width: 320px;
+      padding: 16px;
+      font-size: 28px;
+      text-align: center;
+      border: 2px solid var(--tg-theme-button-color, #3390ec);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--tg-theme-text-color, #000);
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .error { color: #e53935; font-size: 13px; margin-top: 8px; min-height: 18px; }
+  </style>
+</head>
+<body>
+  <h2>💳 Top-up</h2>
+  <p>Enter the amount you want to deposit</p>
+  <input type="number" id="amount" min="1" placeholder="0" inputmode="numeric" autofocus />
+  <div class="error" id="error"></div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    const input = document.getElementById('amount');
+    const errorEl = document.getElementById('error');
+
+    tg.MainButton.setText('Confirm Deposit');
+    tg.MainButton.show();
+
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/[^0-9]/g, '');
+      errorEl.textContent = '';
+    });
+
+    tg.MainButton.onClick(() => {
+      const val = input.value.trim();
+      if (!val || Number(val) <= 0) {
+        errorEl.textContent = 'Please enter a valid amount.';
+        return;
+      }
+      tg.sendData(val);
+      tg.close();
+    });
+  </script>
+</body>
+</html>
